@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"> <!-- Defaulting to dark mode -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generation Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748; /* dark:gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568; /* dark:gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* dark:gray-500 */
+        }
+    </style>
+    <script>
+        // Set Tailwind dark mode
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-10 transition-colors duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+                AI Image Generation Guide
+            </h1>
+            <button id="theme-toggle" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <i class="fas fa-sun" id="theme-icon-sun"></i>
+                <i class="fas fa-moon" id="theme-icon-moon" style="display: none;"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+            <!-- Left Column: Generator -->
+            <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-xl">
+                <h2 class="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">AI Image Generator</h2>
+                
+                <div class="space-y-4">
+                    <!-- 1. Subject -->
+                    <div>
+                        <label for="prompt-subject" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">১. Subject (বিষয়বস্তু)</label>
+                        <input type="text" id="prompt-subject" placeholder="যেমন: A 30-year-old Bangladeshi man..." class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                    </div>
+
+                    <!-- 2. Action / Pose -->
+                    <div>
+                        <label for="prompt-action" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">২. Action / Pose (অবস্থান)</label>
+                        <input type="text" id="prompt-action" placeholder="যেমন: sitting beside a tea stall, holding a cup of tea..." class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                    </div>
+
+                    <!-- 3. Environment / Background -->
+                    <div>
+                        <label for="prompt-env" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">৩. Environment (পরিবেশ)</label>
+                        <input type="text" id="prompt-env" placeholder="যেমন: in Old Dhaka, rainy night..." class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                    </div>
+
+                    <!-- 4. Lighting Type -->
+                    <div>
+                        <label for="prompt-lighting" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">৪. Lighting Type (আলোর ধরন)</label>
+                        <select id="prompt-lighting" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                            <option value="natural daylight, clear sky, soft shadows, photorealistic style">Natural Lighting (দিনের আলো)</option>
+                            <option value="golden hour lighting, soft warm glow, cinematic depth, calm rural background">Golden Hour (গোধূলি)</option>
+                            <option value="cinematic lighting, moody shadows, strong highlights, storytelling mood">Cinematic Lighting (সিনেমাটিক)</option>
+                            <option value="soft lighting, diffused light, smooth skin tones, calm expression">Soft Lighting (নরম আলো)</option>
+                            <option value="backlighting, rim light around subject, semi-silhouette, magical vibe">Backlighting (পেছন থেকে আলো)</option>
+                            <option value="studio lighting, sharp focus, clean shadows, professional portrait">Studio Lighting (স্টুডিও)</option>
+                            <option value="low key lighting, deep shadows, intense expression, dramatic mood">Low Key Lighting (অন্ধকারাচ্ছন্ন)</option>
+                            <option value="neon lighting, cyberpunk style, glowing pink and blue lights, reflective surfaces">Neon / Artificial (নিয়ন আলো)</option>
+                        </select>
+                    </div>
+
+                    <!-- 5. Camera Angle -->
+                    <div>
+                        <label for="prompt-angle" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">৫. Camera Angle (ক্যামেরা অ্যাঙ্গেল)</label>
+                        <select id="prompt-angle" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                            <option value="eye-level angle, natural perspective">Eye-level (চোখের স্তরে)</option>
+                            <option value="high angle shot, looking down, shows subject as smaller">High angle (উপর থেকে)</option>
+                            <option value="low angle shot, looking up, shows subject as powerful or tall">Low angle (নিচ থেকে)</option>
+                            <option value="over-the-shoulder view, conversational perspective">Over-the-shoulder (কাঁধের উপর দিয়ে)</option>
+                            <option value="top-down view, bird's eye view, flat lay style">Top-down / Bird's eye (সরাসরি উপর থেকে)</option>
+                            <option value="worm's eye view, extreme low angle">Worm's eye (মাটি থেকে)</option>
+                            <option value="close-up portrait shot, focuses on facial expression">Close-up / Portrait (ক্লোজ-আপ)</option>
+                            <option value="wide shot, full body, shows landscape and environment">Wide shot / Landscape (ওয়াইড শট)</option>
+                        </select>
+                    </div>
+
+                    <!-- 6. Camera Lens -->
+                    <div>
+                        <label for="prompt-lens" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">৬. Camera Lens (ক্যামেরা লেন্স)</label>
+                        <select id="prompt-lens" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                            <option value="35mm DSLR lens, natural depth, wide background">35mm Lens (ন্যাচারাল)</option>
+                            <option value="50mm prime lens, human eye view, shallow depth of field, soft bokeh">50mm Lens (প্রাইম)</option>
+                            <option value="85mm lens, cinematic portrait, soft bokeh background">85mm Lens (পোর্ট্রেট)</option>
+                            <option value="16mm wide angle lens, dramatic distortion, architectural">16mm Wide-angle (প্রশস্ত)</option>
+                            <option value="telephoto lens effect, zoomed in, compressed background">Telephoto Lens (জুম)</option>
+                            <option value="macro lens, extreme close-up, detailed texture">Macro Lens (ম্যাক্রো)</option>
+                        </select>
+                    </div>
+
+                    <!-- 7. Art Style -->
+                    <div>
+                        <label for="prompt-style" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">৭. Art Style (শিল্পরীতি)</label>
+                        <select id="prompt-style" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                            <option value="photorealistic style, hyper-realistic digital art, DSLR 50mm lens, realistic texture">Photorealistic (বাস্তবসম্মত)</option>
+                            <option value="cinematic film look, ultra high-definition, emotional mood, soft shadows">Cinematic (সিনেমাটিক)</option>
+                            <option value_comment="PDF 16-19" value="2D anime illustration, manga style, bright pastel colors, big expressive eyes, clean line art, Studio Ghibli inspired style">Anime / Manga (এনিমে)</option>
+                            <option value="1970s vintage photo, sepia tone, faded film grain, analog photo effect">Vintage Film Look (ভিনটেজ)</option>
+                            <option value="watercolor painting, soft colors, hand-painted style, textured paper">Watercolor Illustration (জলরঙ)</option>
+                            <option value="oil painting, thick brush strokes, expressive texture, artistic mood">Oil Painting (তৈলচিত্র)</option>
+                            <option value="Pixar 3D animation style, cute character, bright colors, rendered in 3D">Pixar / 3D Animation (থ্রিডি এনিমেশন)</option>
+                            <option value="cyberpunk art style, futuristic city, neon lights, glowing pink and blue, night cityscape">Cyberpunk / Futuristic (সাইবারপাঙ্ক)</option>
+                            <option value="dark fantasy style, gothic, dramatic shadows, mystical atmosphere">Dark Fantasy / Gothic (ডার্ক ফ্যান্টাসি)</option>
+                            <option value="1995 yearbook photo, retro grain effect, classic portrait pose">AI Yearbook Style (90s School)</option>
+                            <option value="Barbie style portrait, sparkly textures, glowing skin, soft pastel pink colors">Barbie Style (বারবি)</option>
+                            <option value="clean typography design, minimalist, text-based art, 'Your Text Here'">Typography (টাইপোগ্রাফি)</option>
+                            <option value="graphic design poster, commercial advertisement style, bold colors, product mockup">Poster Design (পোস্টার ডিজাইন)</option>
+                        </select>
+                    </div>
+
+                    <!-- 8. Optional Enhancers -->
+                    <div>
+                        <label for="prompt-enhancers" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">৮. Optional Enhancers (অতিরিক্ত)</label>
+                        <input type="text" id="prompt-enhancers" placeholder="যেমন: wearing a white panjabi, holding a clay cup..." class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                    </div>
+
+                    <!-- 9. Image Size -->
+                    <div>
+                        <label for="prompt-size" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">৯. Image Size (ছবির আকার)</label>
+                        <input type="text" id="prompt-size" placeholder="যেমন: 1:1, 16:9, 4:3..." class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                    </div>
+
+                    <!-- 10. Reference Image -->
+                    <div>
+                        <label for="reference-image" class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">১০. Reference Image (রেফারেন্স ছবি)</label>
+                        <input type="file" id="reference-image" accept="image/*" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-sm cursor-pointer file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-300 dark:hover:file:bg-blue-800 transition-colors duration-200">
+                        <!-- Image Preview -->
+                        <div id="image-preview-container" class="mt-4 relative w-48 h-48 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg" style="display: none;">
+                            <img id="image-preview" src="" alt="Image Preview" class="w-full h-full object-cover rounded-lg">
+                            <button id="clear-image-btn" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-lg shadow-md hover:bg-red-700">&times;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="generate-btn" class="w-full bg-blue-600 text-white text-lg font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300 dark:bg-blue-500 dark:hover:bg-blue-600 mt-8 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                    Generate Image
+                </button>
+            </div>
+
+            <!-- Right Column: Result -->
+            <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-xl flex flex-col items-center justify-center min-h-[500px] lg:min-h-full">
+                <div id="loader" class="loader" style="display: none;"></div>
+                <div id="message-area" class="text-center text-gray-500 dark:text-gray-400" style="display: none;"></div>
+                <div id="result-container" class="w-full text-center">
+                    <img id="result-image" src="https://placehold.co/512x512/F3F4F6/9CA3AF?text=Your+Generated+Image+Will+Appear+Here" alt="Generated Image" class="w-full max-w-full mx-auto rounded-xl shadow-xl">
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Section 2: Formula and Tools -->
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-10">
+            <!-- Prompt Formula -->
+            <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-xl transition-transform duration-300 hover:shadow-2xl hover:-translate-y-1">
+                <h2 class="text-2xl font-bold mb-4">প্রম্পট লেখার ফর্মুলা (PDF Page 24)</h2>
+                <p class="mb-4 text-gray-600 dark:text-gray-300">একটি ভালো ছবি তৈরির মূল চাবিকাঠি হলো "একুরেট ও ইনফরমেটিভ প্রম্পট"।</p>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
+                    <li><strong>Subject:</strong> কে বা কী থাকবে ছবিতে?</li>
+                    <li><strong>Action / Pose:</strong> সে কী করছে বা কেমনভাবে আছে?</li>
+                    <li><strong>Environment / Background:</strong> পেছনের জায়গা কেমন?</li>
+                    <li><strong>Lighting & Mood:</strong> আলো ও ছবির আবহ কেমন?</li>
+                    <li><strong>Camera Details:</strong> অ্যাঙ্গেল, লেন্স বা স্টাইল।</li>
+                    <li><strong>Art Style:</strong> ছবিট কি ফটো রিয়ালিস্টিক না কার্টুন?</li>
+                    <li><strong>Enhancers:</strong> অন্যান্য আইটেম বা আলাদা ডিটেইলস।</li>
+                    <li><strong>Image size:</strong> ছবির অনুপাত (e.g., --ar 16:9)।</li>
+                </ol>
+            </div>
+
+            <!-- AI Tools -->
+            <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-xl transition-transform duration-300 hover:shadow-2xl hover:-translate-y-1">
+                <h2 class="text-2xl font-bold mb-4">AI টুলস পরিচিতি (PDF Page 55-56)</h2>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <i class="fab fa-diaspora text-xl mt-1 text-blue-500 mr-4"></i>
+                        <div>
+                            <h3 class="font-semibold text-lg">DALL-E 3 (ChatGPT)</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">বাস্তবসম্মত ছবি ও ইংরেজি টেক্সট জেনারেট করতে পারে।</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fab fa-leanpub text-xl mt-1 text-purple-500 mr-4"></i>
+                        <div>
+                            <h3 class="font-semibold text-lg">Leonardo AI</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">আল্ট্রা রিয়েলিস্টিক এবং স্ট্রাকচার নিয়ন্ত্রণের সুবিধা।</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fab fa-free-code-camp text-xl mt-1 text-green-500 mr-4"></i>
+                        <div>
+                            <h3 class="font-semibold text-lg">FREEPIK AI</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">কমার্শিয়াল/ব্র্যান্ডেড ব্যানার বা ব্যাকগ্রাউন্ডের জন্য সহজ।</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fab fa-mendeley text-xl mt-1 text-orange-500 mr-4"></i>
+                        <div>
+                            <h3 class="font-semibold text-lg">Midjourney</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">আর্টিস্টিক ও সিনেম্যাটিক, আলোর ব্যবহারে শ্রেষ্ঠ।</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- Globals ---
+        const generateBtn = document.getElementById('generate-btn');
+        const loader = document.getElementById('loader');
+        const messageArea = document.getElementById('message-area');
+        const resultContainer = document.getElementById('result-container');
+        const resultImage = document.getElementById('result-image');
+        
+        // Form Fields
+        const promptSubject = document.getElementById('prompt-subject');
+        const promptAction = document.getElementById('prompt-action');
+        const promptEnv = document.getElementById('prompt-env');
+        const promptLighting = document.getElementById('prompt-lighting');
+        const promptAngle = document.getElementById('prompt-angle');
+        const promptLens = document.getElementById('prompt-lens');
+        const promptStyle = document.getElementById('prompt-style');
+        const promptEnhancers = document.getElementById('prompt-enhancers');
+        const promptSize = document.getElementById('prompt-size');
+        
+        // Image Upload
+        const referenceImageInput = document.getElementById('reference-image');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const clearImageBtn = document.getElementById('clear-image-btn');
+        
+        // State
+        const uploadedImage = {
+            data: null,
+            mimeType: ""
+        };
+        const apiKey = ""; // API key is handled by the environment
+
+        // --- Dark Mode Toggle ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+
+        // Check and apply saved theme on load
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            sunIcon.style.display = 'none';
+            moonIcon.style.display = 'inline';
+        } else {
+            document.documentElement.classList.remove('dark');
+            sunIcon.style.display = 'inline';
+            moonIcon.style.display = 'none';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.toggle('dark')) {
+                // Dark mode
+                localStorage.setItem('theme', 'dark');
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'inline';
+            } else {
+                // Light mode
+                localStorage.setItem('theme', 'light');
+                sunIcon.style.display = 'inline';
+                moonIcon.style.display = 'none';
+            }
+        });
+
+        // --- Image Upload Handling ---
+        referenceImageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const base64String = e.target.result;
+                    imagePreview.src = base64String;
+                    imagePreviewContainer.style.display = 'block';
+                    
+                    // Store base64 data without the prefix
+                    uploadedImage.data = base64String.split(',')[1]; 
+                    uploadedImage.mimeType = file.type;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        clearImageBtn.addEventListener('click', () => {
+            uploadedImage.data = null;
+            uploadedImage.mimeType = "";
+            referenceImageInput.value = null; // Clear the file input
+            imagePreviewContainer.style.display = 'none';
+            imagePreview.src = "";
+        });
+
+        // --- Utility Functions ---
+        function showMessage(msg, isError = false) {
+            messageArea.textContent = msg;
+            messageArea.style.color = isError ? '#ef4444' : '#6b7280'; // red-500 or gray-500
+            messageArea.style.display = 'block';
+        }
+
+        function showLoader(isLoading) {
+            if (isLoading) {
+                loader.style.display = 'block';
+                resultContainer.style.display = 'none';
+                messageArea.style.display = 'none';
+                generateBtn.disabled = true;
+                generateBtn.textContent = 'Generating...';
+            } else {
+                loader.style.display = 'none';
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate Image';
+            }
+        }
+        
+        /**
+         * Fetches with exponential backoff.
+         * @param {string} url The URL to fetch.
+         * @param {object} options The fetch options.
+         * @param {number} maxRetries Maximum number of retries.
+         * @returns {Promise<Response>}
+         */
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            let attempt = 0;
+            while (attempt < maxRetries) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status === 429 || (response.status >= 500 && response.status <= 599)) {
+                        // Throttling or server error, retry
+                        throw new Error(`Retryable error: ${response.status}`);
+                    }
+                    return response; // Success or non-retryable error
+                } catch (error) {
+                    attempt++;
+                    if (attempt >= maxRetries) {
+                        throw error; // Max retries reached
+                    }
+                    const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        // --- Master Prompt Generation (Step 1) ---
+        /**
+         * @param {object} inputs - An object containing all 9 input values.
+         * @returns {Promise<string>} - The generated master prompt.
+         */
+        async function generateMasterPrompt(inputs) {
+            const systemPrompt = `You are an expert prompt engineer for generative AI image models. A user will provide you with 9 distinct inputs: Subject, Action, Environment, Lighting, Camera Angle, Camera Lens, Art Style, Enhancers, and Image Size.
+Your task is to synthesize these inputs into a single, cohesive, and powerful master prompt.
+- Combine the inputs naturally.
+- Prioritize the "Art Style" to ensure the mood and visuals are correct.
+- If "Image Size" is provided (e.g., 16:9), format it as '--ar 16:9' at the very end.
+- Create a single, descriptive paragraph. Do not use lists or headings.`;
+
+            const userQuery = `
+                Subject: ${inputs.subject}
+                Action: ${inputs.action}
+                Environment: ${inputs.env}
+                Lighting: ${inputs.lighting}
+                Camera Angle: ${inputs.angle}
+                Camera Lens: ${inputs.lens}
+                Art Style: ${inputs.style}
+                Enhancers: ${inputs.enhancers}
+                Image Size: ${inputs.size}
+            `;
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            try {
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Master Prompt API Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const masterPrompt = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!masterPrompt) {
+                    throw new Error("Could not generate master prompt.");
+                }
+                
+                // console.log("Master Prompt:", masterPrompt); // For debugging
+                return masterPrompt;
+
+            } catch (error) {
+                console.error("Master Prompt Generation Failed:", error);
+                showMessage("ধাপ ১: মাস্টার প্রম্পট তৈরিতে ব্যর্থ। ডিফল্ট প্রম্পট ব্যবহার করা হচ্ছে।", true);
+                // Fallback: simple join
+                return [inputs.subject, inputs.action, inputs.env, inputs.lighting, inputs.angle, inputs.lens, inputs.style, inputs.enhancers]
+                    .filter(part => part && part.trim() !== "")
+                    .join(', ') + (inputs.size ? ` --ar ${inputs.size}` : '');
+            }
+        }
+
+        // --- Image Generation (Step 2) ---
+        /**
+         * @param {string} masterPrompt - The prompt to use for generation.
+         */
+        async function generateImage(masterPrompt) {
+            // Check if a reference image is uploaded
+            if (uploadedImage.data) {
+                // --- Step 2a: Image-to-Image Generation ---
+                return generateImageFromImage(masterPrompt);
+            } else {
+                // --- Step 2b: Text-to-Image Generation ---
+                return generateImageFromText(masterPrompt);
+            }
+        }
+        
+        // --- Step 2a: Text-to-Image ---
+        async function generateImageFromText(prompt) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+            const payload = {
+                instances: { prompt: prompt },
+                parameters: { "sampleCount": 1 }
+            };
+
+            const response = await fetchWithRetry(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Text-to-Image API Error: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            const base64Data = result.predictions?.[0]?.bytesBase64Encoded;
+
+            if (base64Data) {
+                return `data:image/png;base64,${base64Data}`;
+            } else {
+                throw new Error("Text-to-Image API did not return an image.");
+            }
+        }
+
+        // --- Step 2b: Image-to-Image ---
+        async function generateImageFromImage(prompt) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [
+                        { text: prompt },
+                        {
+                            inlineData: {
+                                mimeType: uploadedImage.mimeType,
+                                data: uploadedImage.data
+                            }
+                        }
+                    ]
+                }],
+                generationConfig: {
+                    responseModalities: ['IMAGE']
+                },
+            };
+
+            const response = await fetchWithRetry(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Image-to-Image API Error: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+            if (base64Data) {
+                return `data:image/png;base64,${base64Data}`;
+            } else {
+                throw new Error("Image-to-Image API did not return an image.");
+            }
+        }
+
+        // --- Main Generate Button Click Event ---
+        generateBtn.addEventListener('click', async () => {
+            
+            // Collect all 9 inputs
+            const inputs = {
+                subject: promptSubject.value.trim(),
+                action: promptAction.value.trim(),
+                env: promptEnv.value.trim(),
+                lighting: promptLighting.value.trim(),
+                angle: promptAngle.value.trim(),
+                lens: promptLens.value.trim(),
+                style: promptStyle.value.trim(),
+                enhancers: promptEnhancers.value.trim(),
+                size: promptSize.value.trim()
+            };
+
+            // Check if at least one field is filled (or image is uploaded)
+            const isAnyInputFilled = Object.values(inputs).some(val => val !== "");
+            
+            if (!isAnyInputFilled && !uploadedImage.data) {
+                showMessage("অনুগ্রহ করে অন্তত একটি ফিল্ড পূরণ করুন বা একটি ছবি আপলোড করুন।", true);
+                return;
+            }
+
+            showLoader(true);
+
+            try {
+                // --- Step 1: Generate Master Prompt ---
+                showMessage("ধাপ ১: আপনার ইনপুট দিয়ে মাস্টার প্রম্পট তৈরি করা হচ্ছে...");
+                const masterPrompt = await generateMasterPrompt(inputs);
+
+                // --- Step 2: Generate Image ---
+                showMessage("ধাপ ২: মাস্টার প্রম্পট দিয়ে ছবি তৈরি করা হচ্ছে...");
+                const imageUrl = await generateImage(masterPrompt);
+
+                // --- Show Result ---
+                resultImage.src = imageUrl;
+                resultContainer.style.display = 'block';
+                messageArea.style.display = 'none';
+
+            } catch (error) { // FIX: Removed the extra 'S'
+                console.error('Error during generation:', error);
+                showMessage(`Error: ${error.message}`, true);
+                resultContainer.style.display = 'none';
+            } finally {
+                showLoader(false);
+            }
+        });
+
+    </script>
+</body>
+</html>
